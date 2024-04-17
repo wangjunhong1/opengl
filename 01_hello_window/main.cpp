@@ -68,8 +68,8 @@ int main()
         processInput(window);
 
         // 2. 渲染指令
-        glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClearColor(1.0f, 0.0f, 0.0f, 1.0f); // 设置颜色
+        glClear(GL_COLOR_BUFFER_BIT);         // 用指定颜色清空缓冲
 
         // 3. 检查并调用事件
         glfwPollEvents();
