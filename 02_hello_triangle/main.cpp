@@ -9,15 +9,32 @@ using std::cout;
 using std::endl;
 
 // 顶点数组
+// float vertices[] = {
+//     -0.5f, -0.5f, 0.0f,
+//     0.5f, -0.5f, 0.0f,
+//     0.0f, 0.5f, 0.0f};
 float vertices[] = {
-    -0.5f, -0.5f, 0.0f,
-    0.5f, -0.5f, 0.0f,
-    0.0f, 0.5f, 0.0f};
+    0.5f, 0.5f, 0.0f,   // 右上角
+    0.5f, -0.5f, 0.0f,  // 右下角
+    -0.5f, -0.5f, 0.0f, // 左下角
+    -0.5f, 0.5f, 0.0f   // 左上角
+};
+// 元素缓冲对象
+unsigned int indices[] = {
+    // 注意索引从0开始!
+    // 此例的索引(0,1,2,3)就是顶点数组vertices的下标，
+    // 这样可以由下标代表顶点组合成矩形
+
+    0, 1, 3, // 第一个三角形
+    1, 2, 3  // 第二个三角形
+};
 
 // 顶点数组对象
 unsigned int VAO;
 // 顶点缓冲对象
 unsigned int VBO;
+// 元素缓冲对象
+unsigned int EBO;
 
 // 顶点着色器
 unsigned int vertexShader;
@@ -91,22 +108,28 @@ int main()
     glGenVertexArrays(1, &VAO);
     // 生成顶点缓冲对象
     glGenBuffers(1, &VBO);
+    // 生成元素缓冲对象
+    glGenBuffers(1, &EBO);
 
     // 绑定VAO（记住先绑定VAO）
     glBindVertexArray(VAO);
     // 绑定缓冲对象
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    // 绑定元素缓冲对象
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
     // 发送数据到缓冲
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // 发送顶点数据到顶点缓冲
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);       // 发送顶点数据到顶点缓冲
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW); // 发送索引数据到索引缓冲
     // 设置如何解析顶点
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
     // 启用顶点属性
     glEnableVertexAttribArray(0);
 
     // 之后可以解绑VBO和VAO，在需要时重新绑定VAO即可（两者之间没有顺序）
-    glBindBuffer(GL_ARRAY_BUFFER, 0); // 解绑VBO
-    glBindVertexArray(0);             // 解绑VAO
+    glBindBuffer(GL_ARRAY_BUFFER, 0);         // 解绑VBO
+    glBindVertexArray(0);                     // 解绑VAO
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // EBO的解绑在VAO解绑后
 
     // 创建顶点着色器
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -183,7 +206,10 @@ int main()
         // 绘制
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        // glDrawArrays(GL_TRIANGLES, 0, 3);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
 
         // 3. 检查并调用事件
         glfwPollEvents();
