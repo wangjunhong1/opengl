@@ -1,0 +1,2 @@
+add_subdirectory(00_test_env)
+add_subdirectory(01_hello_window)
