@@ -76,6 +76,7 @@ unsigned int vertexShader;
 unsigned int fragmentShader;
 // 着色器程序
 unsigned int shaderProgram;
+unsigned int shaderProgram2;
 
 // 顶点着色器源代码
 const char *vertexShaderSource = "#version 330 core\n"
@@ -92,6 +93,13 @@ const char *fragmentShaderSource = "#version 330 core\n"
                                    "{\n"
                                    "    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
                                    "}";
+
+const char *fragmentShaderSource2 = "#version 330 core\n"
+                                    "out vec4 FragColor;\n"
+                                    "void main()\n"
+                                    "{\n"
+                                    "    FragColor = vec4(1.0f, 1.0f, 0.0f, 1.0f);\n"
+                                    "}";
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
@@ -134,6 +142,60 @@ void initBuffers(unsigned int *VAO, unsigned int *VBO, unsigned int *EBO, float 
     // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // EBO的解绑在VAO解绑后
 }
 
+unsigned int buildShader(const char *shaderSource, int shaderType)
+{
+    // 创建顶点着色器
+    unsigned int shader = glCreateShader(shaderType);
+    // 编译着色器
+    glShaderSource(shader, 1, &shaderSource, NULL);
+    glCompileShader(shader);
+    // 查看编译信息
+    int success;
+    char infoLog[512];
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(shader, 512, NULL, infoLog);
+        cout << "着色器编译失败: \n"
+             << infoLog << endl;
+        return -1;
+    }
+    cout << "着色器编译成功" << endl;
+    return shader;
+}
+
+unsigned int createProgram(const char *vertexShaderSource, const char *fragmentShaderSource)
+{
+    unsigned int vertexShader = buildShader(vertexShaderSource, GL_VERTEX_SHADER);
+    unsigned int fragmentShader = buildShader(fragmentShaderSource, GL_FRAGMENT_SHADER);
+    // 创建着色器程序
+    unsigned int shaderProgram = glCreateProgram();
+    // 附加顶点着色器
+    glAttachShader(shaderProgram, vertexShader);
+    // 附加片段着色器
+    glAttachShader(shaderProgram, fragmentShader);
+    // 链接顶点着色器和片段着色器
+    glLinkProgram(shaderProgram);
+    // 查看状态
+    int success;
+    char infoLog[512];
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success)
+    {
+        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+        cout << "着色器链接失败:\n"
+             << infoLog << endl;
+    }
+    else
+    {
+        cout << "着色器链接成功" << endl;
+    }
+    // 着色器链接成功之后可以删掉之前的着色器了
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+    return shaderProgram;
+}
+
 int main()
 {
     // 初始化GLFW
@@ -171,67 +233,8 @@ int main()
     initBuffers(&VAO, &VBO, NULL, vertices, 9);
     initBuffers(&VAO2, &VBO2, NULL, vertices2, 9);
 
-    // 创建顶点着色器
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    // 编译着色器
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-    // 查看编译信息
-    int success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        cout << "顶点着色器编译失败: \n"
-             << infoLog << endl;
-    }
-    else
-    {
-        cout << "顶点着色器编译成功" << endl;
-    }
-
-    // 创建片段着色器
-    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    // 编译片段着色器
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-    // 查看编译信息
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        cout << "片段着色器编译失败: \n"
-             << infoLog << endl;
-    }
-    else
-    {
-        cout << "片段着色器编译成功" << endl;
-    }
-
-    // 创建着色器程序
-    shaderProgram = glCreateProgram();
-    // 附加顶点着色器
-    glAttachShader(shaderProgram, vertexShader);
-    // 附加片段着色器
-    glAttachShader(shaderProgram, fragmentShader);
-    // 链接顶点着色器和片段着色器
-    glLinkProgram(shaderProgram);
-    // 查看状态
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success)
-    {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        cout << "着色器链接失败:\n"
-             << infoLog << endl;
-    }
-    else
-    {
-        cout << "着色器链接成功" << endl;
-    }
-    // 着色器链接成功之后可以删掉之前的着色器了
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    shaderProgram = createProgram(vertexShaderSource, fragmentShaderSource);
+    shaderProgram2 = createProgram(vertexShaderSource, fragmentShaderSource2);
 
     // 渲染循环
     while (!glfwWindowShouldClose(window))
@@ -249,6 +252,7 @@ int main()
         glDrawArrays(GL_TRIANGLES, 0, 3);
         // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glUseProgram(shaderProgram2);
         glBindVertexArray(VAO2);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
