@@ -7,7 +7,7 @@ project(03_shaders)
 # 设置可执行文件的中文编码集，否则输出中文会乱码
 add_compile_options(-fexec-charset=gbk)
 
-set(PARENT_DIR C:/Users/wangj/Documents/opengl)
+set(PARENT_DIR ../)
 
 file(GLOB SOURCES ${PARENT_DIR}/glad.c main.cpp)
 

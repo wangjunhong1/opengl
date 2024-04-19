@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 project(00_test_env)
 
-set(PARENT_DIR C:/Users/wangj/Documents/opengl)
+set(PARENT_DIR ../)
 
 file(GLOB SOURCES ${PARENT_DIR}/glad.c main.cpp)
 
