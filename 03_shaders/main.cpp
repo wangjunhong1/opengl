@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <cmath>
+#include <shader_helper.h>
 
 #define WIDTH 800
 #define HEIGHT 600
@@ -10,32 +11,22 @@ using std::cout;
 using std::endl;
 using std::sin;
 
-// 顶点着色器源代码
-const char *vertexShaderSource = "#version 330 core\n"
-                                 "layout (location = 0) in vec3 aPos; // 位置变量的属性位置值为0 \n"
-                                 "void main()\n"
-                                 "{\n"
-                                 "    gl_Position = vec4(aPos, 1.0);          // 注意我们如何把一个vec3作为vec4的构造器的参数\n"
-                                 "}";
-
-// 片段着色器源代码
-const char *fragmentShaderSource = "#version 330 core\n"
-                                   "out vec4 FragColor;\n"
-                                   "uniform vec4 ourColor; // 在OpenGL程序代码中设定这个变量\n"
-                                   "void main()\n"
-                                   "{\n"
-                                   "    FragColor = ourColor;\n"
-                                   "}";
-
-// 顶点数组
-float vertics[] = {
-    -0.5f, -0.5f, 0.0f,
-    0.5f, -0.5f, 0.0f,
-    0.0f, 0.5f, 0.0f};
+// 包含颜色值的顶点数组
+float vertices[] = {
+    // 位置
+    0.5f,
+    -0.5f,
+    0.0f,
+    -0.5f,
+    -0.5f,
+    0.0f,
+    0.0f,
+    0.5f,
+    0.0f,
+};
 
 unsigned int VAO;
 unsigned int VBO;
-unsigned int shaderProgram;
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
@@ -67,7 +58,7 @@ void initBuffers(unsigned int *VAO, unsigned int *VBO, unsigned int *EBO, float 
     // 发送数据到缓冲
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertexLength, vertices, GL_STATIC_DRAW); // 发送顶点数据到顶点缓冲
     // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW); // 发送索引数据到索引缓冲
-    // 设置如何解析顶点
+    // 设置如何解析顶点：顶点
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
     // 启用顶点属性
     glEnableVertexAttribArray(0);
@@ -76,60 +67,6 @@ void initBuffers(unsigned int *VAO, unsigned int *VBO, unsigned int *EBO, float 
     glBindBuffer(GL_ARRAY_BUFFER, 0); // 解绑VBO
     glBindVertexArray(0);             // 解绑VAO
     // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // EBO的解绑在VAO解绑后
-}
-
-unsigned int buildShader(const char *shaderSource, int shaderType)
-{
-    // 创建顶点着色器
-    unsigned int shader = glCreateShader(shaderType);
-    // 编译着色器
-    glShaderSource(shader, 1, &shaderSource, NULL);
-    glCompileShader(shader);
-    // 查看编译信息
-    int success;
-    char infoLog[512];
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(shader, 512, NULL, infoLog);
-        cout << "着色器编译失败: \n"
-             << infoLog << endl;
-        return -1;
-    }
-    cout << "着色器编译成功" << endl;
-    return shader;
-}
-
-unsigned int createProgram(const char *vertexShaderSource, const char *fragmentShaderSource)
-{
-    unsigned int vertexShader = buildShader(vertexShaderSource, GL_VERTEX_SHADER);
-    unsigned int fragmentShader = buildShader(fragmentShaderSource, GL_FRAGMENT_SHADER);
-    // 创建着色器程序
-    unsigned int shaderProgram = glCreateProgram();
-    // 附加顶点着色器
-    glAttachShader(shaderProgram, vertexShader);
-    // 附加片段着色器
-    glAttachShader(shaderProgram, fragmentShader);
-    // 链接顶点着色器和片段着色器
-    glLinkProgram(shaderProgram);
-    // 查看状态
-    int success;
-    char infoLog[512];
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success)
-    {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        cout << "着色器链接失败:\n"
-             << infoLog << endl;
-    }
-    else
-    {
-        cout << "着色器链接成功" << endl;
-    }
-    // 着色器链接成功之后可以删掉之前的着色器了
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-    return shaderProgram;
 }
 
 int main()
@@ -171,8 +108,9 @@ int main()
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
     cout << "支持的最大顶点属性数是 : " << nrAttributes << endl;
 
-    initBuffers(&VAO, &VBO, NULL, vertics, sizeof(vertics));
-    shaderProgram = createProgram(vertexShaderSource, fragmentShaderSource);
+    initBuffers(&VAO, &VBO, NULL, vertices, sizeof(vertices));
+    ShaderHelper shaderHelper = ShaderHelper("D:\\workplace\\opengl\\03_shaders\\vertexShader.glsl",
+                                             "D:\\workplace\\opengl\\03_shaders\\fragmentShader.glsl");
 
     // 渲染循环
     while (!glfwWindowShouldClose(window))
@@ -184,20 +122,10 @@ int main()
         // 清屏
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        glUseProgram(shaderProgram);
-        // 从程序中设置uniform变量
-        float timeValue = glfwGetTime();
-        float greenValue = (sin(timeValue) / 2.0f) + 0.5f; // 随时间生成0-1的浮点数
-        int ourColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-        if (ourColorLocation != -1)
-        {
-            // 给Uniform变量赋值
-            glUniform4f(ourColorLocation, 0.0f, greenValue, 0.0f, 0.0f);
-        }
-        else
-        {
-            cout << "查询不到outColor的uniform变量" << endl;
-        }
+        shaderHelper.use();
+        float curTime = glfwGetTime();
+        float green = (std::sin(curTime) / 2.0f) + 0.5f;
+        shaderHelper.setFloat("ourColor", 4, 0.0f, green, 0.0f, 1.0f);
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 

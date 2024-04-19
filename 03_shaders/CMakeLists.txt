@@ -9,7 +9,13 @@ add_compile_options(-fexec-charset=gbk)
 
 set(PARENT_DIR ../)
 
-file(GLOB SOURCES ${PARENT_DIR}/glad.c main.cpp)
+include_directories(${PARENT_DIR}/shader_helper)
+
+file(GLOB SOURCES 
+        ${PARENT_DIR}/glad.c 
+        main.cpp
+        ${PARENT_DIR}/shader_helper/*.cpp
+)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
  
