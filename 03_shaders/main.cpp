@@ -126,6 +126,10 @@ int main()
         float curTime = glfwGetTime();
         float green = (std::sin(curTime) / 2.0f) + 0.5f;
         shaderHelper.setFloat("ourColor", 4, 0.0f, green, 0.0f, 1.0f);
+
+        // 把三角形移到右侧
+        shaderHelper.setFloat("xOffset", 1, 0.5f);
+
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 

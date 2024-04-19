@@ -1,7 +1,9 @@
 #version 330 core
-layout(location=0)in vec3 aPos;// Î»ÖÃ±äÁ¿µÄÊôĞÔÎ»ÖÃÖµÎª0
+layout(location=0)in vec3 aPos;// ä½ç½®å˜é‡çš„å±æ€§ä½ç½®å€¼ä¸º0
+
+uniform float xOffset;
 
 void main()
 {
-    gl_Position=vec4(aPos,1.);// ×¢ÒâÎÒÃÇÈçºÎ°ÑÒ»¸övec3×÷Îªvec4µÄ¹¹ÔìÆ÷µÄ²ÎÊı
+    gl_Position=vec4(aPos.x+xOffset,aPos.yz,1.);// æ³¨æ„æˆ‘ä»¬å¦‚ä½•æŠŠä¸€ä¸ªvec3ä½œä¸ºvec4çš„æ„é€ å™¨çš„å‚æ•°
 }
