@@ -1,30 +1,30 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <cmath>
 
 #define WIDTH 800
 #define HEIGHT 600
 
 using std::cout;
 using std::endl;
+using std::sin;
 
 // 顶点着色器源代码
 const char *vertexShaderSource = "#version 330 core\n"
                                  "layout (location = 0) in vec3 aPos; // 位置变量的属性位置值为0 \n"
-                                 "out vec4 vertexColor; // 为片段着色器指定一个颜色输出 \n"
                                  "void main()\n"
                                  "{\n"
                                  "    gl_Position = vec4(aPos, 1.0);          // 注意我们如何把一个vec3作为vec4的构造器的参数\n"
-                                 "    vertexColor = vec4(0.5, 0.0, 0.0, 1.0); // 把输出变量设置为暗红色\n"
                                  "}";
 
 // 片段着色器源代码
 const char *fragmentShaderSource = "#version 330 core\n"
                                    "out vec4 FragColor;\n"
-                                   "in vec4 vertexColor; // 从顶点着色器传来的输入变量（名称相同、类型相同）\n"
+                                   "uniform vec4 ourColor; // 在OpenGL程序代码中设定这个变量\n"
                                    "void main()\n"
                                    "{\n"
-                                   "    FragColor = vertexColor;\n"
+                                   "    FragColor = ourColor;\n"
                                    "}";
 
 // 顶点数组
@@ -185,6 +185,19 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         glUseProgram(shaderProgram);
+        // 从程序中设置uniform变量
+        float timeValue = glfwGetTime();
+        float greenValue = (sin(timeValue) / 2.0f) + 0.5f; // 随时间生成0-1的浮点数
+        int ourColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+        if (ourColorLocation != -1)
+        {
+            // 给Uniform变量赋值
+            glUniform4f(ourColorLocation, 0.0f, greenValue, 0.0f, 0.0f);
+        }
+        else
+        {
+            cout << "查询不到outColor的uniform变量" << endl;
+        }
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
