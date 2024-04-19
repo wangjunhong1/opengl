@@ -8,6 +8,35 @@
 using std::cout;
 using std::endl;
 
+// 顶点着色器源代码
+const char *vertexShaderSource = "#version 330 core\n"
+                                 "layout (location = 0) in vec3 aPos; // 位置变量的属性位置值为0 \n"
+                                 "out vec4 vertexColor; // 为片段着色器指定一个颜色输出 \n"
+                                 "void main()\n"
+                                 "{\n"
+                                 "    gl_Position = vec4(aPos, 1.0);          // 注意我们如何把一个vec3作为vec4的构造器的参数\n"
+                                 "    vertexColor = vec4(0.5, 0.0, 0.0, 1.0); // 把输出变量设置为暗红色\n"
+                                 "}";
+
+// 片段着色器源代码
+const char *fragmentShaderSource = "#version 330 core\n"
+                                   "out vec4 FragColor;\n"
+                                   "in vec4 vertexColor; // 从顶点着色器传来的输入变量（名称相同、类型相同）\n"
+                                   "void main()\n"
+                                   "{\n"
+                                   "    FragColor = vertexColor;\n"
+                                   "}";
+
+// 顶点数组
+float vertics[] = {
+    -0.5f, -0.5f, 0.0f,
+    0.5f, -0.5f, 0.0f,
+    0.0f, 0.5f, 0.0f};
+
+unsigned int VAO;
+unsigned int VBO;
+unsigned int shaderProgram;
+
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
     glViewport(0, 0, width, height);
@@ -114,7 +143,7 @@ int main()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // 创建窗口
-    GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "02_hello_triangle", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "03_shaders", NULL, NULL);
     if (window == NULL)
     {
         cout << "创建GLFW窗口失败." << endl;
@@ -137,6 +166,14 @@ int main()
     // 注册窗口大小监听器
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    // 查询OpenGL支持的顶点属性个数
+    int nrAttributes;
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
+    cout << "支持的最大顶点属性数是 : " << nrAttributes << endl;
+
+    initBuffers(&VAO, &VBO, NULL, vertics, sizeof(vertics));
+    shaderProgram = createProgram(vertexShaderSource, fragmentShaderSource);
+
     // 渲染循环
     while (!glfwWindowShouldClose(window))
     {
@@ -147,6 +184,9 @@ int main()
         // 清屏
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+        glUseProgram(shaderProgram);
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
         // 3. 检查并调用事件
         glfwPollEvents();
