@@ -35,10 +35,10 @@ AttribPointerParams attribPointerParams[] = {
 // 顶点数组
 float vertices[] = {
     //     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
-    0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 2.0f, 2.0f,   // 右上
-    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 2.0f, 0.0f,  // 右下
-    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // 左下
-    -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 2.0f   // 左上
+    0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.55f, 0.55f,   // 右上
+    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.55f, 0.45f,  // 右下
+    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.45f, 0.45f, // 左下
+    -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.45f, 0.55f   // 左上
 };
 // 元素缓冲对象
 unsigned int indices[] = {
@@ -208,24 +208,12 @@ int main()
     TexParameter texParameter1[] = {
         {GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE},
         {GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE},
-        // {GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST},
-        // {GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST},
-    };
-
-    TexParameter texParameter2[] = {
-        {GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT},
-        {GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT},
-        // {GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST},
-        // {GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST},
+        {GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST},
+        {GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST},
     };
 
     // 初始化纹理
     texture = initTexture("D:\\workplace\\opengl\\04_textures\\container.jpg", GL_RGB, texParameter1, sizeof(texParameter1));
-    texture2 = initTexture("D:\\workplace\\opengl\\04_textures\\awesomeface.png", GL_RGBA, texParameter2, sizeof(texParameter2));
-    // 设置纹理单元对应的纹理采样器
-    shaderHelper.use();
-    shaderHelper.setInt("texture1", 1, 0);
-    shaderHelper.setInt("texture2", 1, 1);
 
     // 渲染循环
     while (!glfwWindowShouldClose(window))
@@ -238,10 +226,7 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         // 绘制
-        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture2);
         shaderHelper.use();
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
