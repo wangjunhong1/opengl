@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <cmath>
+#include <shader_helper.h>
 
 #define WIDTH 800
 #define HEIGHT 600
@@ -9,26 +10,6 @@
 using std::cout;
 using std::endl;
 using std::sin;
-
-// 顶点着色器源代码
-const char *vertexShaderSource = "#version 330 core \n"
-                                 "layout (location = 0) in vec3 aPos;   // 位置变量的属性位置值为 0 \n"
-                                 "layout (location = 1) in vec3 aColor; // 颜色变量的属性位置值为 1 \n"
-                                 "out vec3 ourColor; // 向片段着色器输出一个颜色 \n"
-                                 "void main() \n"
-                                 "{ \n"
-                                 "   gl_Position = vec4(aPos, 1.0); \n"
-                                 "   ourColor = aColor; // 将ourColor设置为我们从顶点数据那里得到的输入颜色 \n"
-                                 "}";
-
-// 片段着色器源代码
-const char *fragmentShaderSource = "#version 330 core\n"
-                                   "out vec4 FragColor;\n"
-                                   "in vec3 ourColor; // 在OpenGL程序代码中设定这个变量\n"
-                                   "void main()\n"
-                                   "{\n"
-                                   "    FragColor = vec4(ourColor,1.0);\n"
-                                   "}";
 
 // 带颜色信息的顶点数组
 float vertices[] = {
@@ -40,7 +21,6 @@ float vertices[] = {
 
 unsigned int VAO;
 unsigned int VBO;
-unsigned int shaderProgram;
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
@@ -85,60 +65,6 @@ void initBuffers(unsigned int *VAO, unsigned int *VBO, unsigned int *EBO, float 
     // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // EBO的解绑在VAO解绑后
 }
 
-unsigned int buildShader(const char *shaderSource, int shaderType)
-{
-    // 创建顶点着色器
-    unsigned int shader = glCreateShader(shaderType);
-    // 编译着色器
-    glShaderSource(shader, 1, &shaderSource, NULL);
-    glCompileShader(shader);
-    // 查看编译信息
-    int success;
-    char infoLog[512];
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(shader, 512, NULL, infoLog);
-        cout << "着色器编译失败: \n"
-             << infoLog << endl;
-        return -1;
-    }
-    cout << "着色器编译成功" << endl;
-    return shader;
-}
-
-unsigned int createProgram(const char *vertexShaderSource, const char *fragmentShaderSource)
-{
-    unsigned int vertexShader = buildShader(vertexShaderSource, GL_VERTEX_SHADER);
-    unsigned int fragmentShader = buildShader(fragmentShaderSource, GL_FRAGMENT_SHADER);
-    // 创建着色器程序
-    unsigned int shaderProgram = glCreateProgram();
-    // 附加顶点着色器
-    glAttachShader(shaderProgram, vertexShader);
-    // 附加片段着色器
-    glAttachShader(shaderProgram, fragmentShader);
-    // 链接顶点着色器和片段着色器
-    glLinkProgram(shaderProgram);
-    // 查看状态
-    int success;
-    char infoLog[512];
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success)
-    {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        cout << "着色器链接失败:\n"
-             << infoLog << endl;
-    }
-    else
-    {
-        cout << "着色器链接成功" << endl;
-    }
-    // 着色器链接成功之后可以删掉之前的着色器了
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-    return shaderProgram;
-}
-
 int main()
 {
     // 初始化GLFW
@@ -179,7 +105,9 @@ int main()
     cout << "支持的最大顶点属性数是 : " << nrAttributes << endl;
 
     initBuffers(&VAO, &VBO, NULL, vertices, sizeof(vertices));
-    shaderProgram = createProgram(vertexShaderSource, fragmentShaderSource);
+    ShaderHelper shaderHelper("D:\\workplace\\opengl\\03_shaders\\vertexShader.glsl",  // 顶点着色器源代码路径
+                              "D:\\workplace\\opengl\\03_shaders\\fragmentShader.glsl" // 片段着色器源代码路径
+    );
 
     // 渲染循环
     while (!glfwWindowShouldClose(window))
@@ -191,7 +119,7 @@ int main()
         // 清屏
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        glUseProgram(shaderProgram);
+        shaderHelper.use();
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
