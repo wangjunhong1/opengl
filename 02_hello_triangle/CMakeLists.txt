@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 14)
 project(02_hello_triangle)
 
 # 设置可执行文件的中文编码集，否则输出中文会乱码
-add_compile_options(-fexec-charset=gbk)
+# add_compile_options(-fexec-charset=gbk)
 
 set(PARENT_DIR ../)
 

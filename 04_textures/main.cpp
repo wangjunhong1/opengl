@@ -10,6 +10,8 @@
 
 using std::cout;
 using std::endl;
+using std::max;
+using std::min;
 
 typedef struct AttribPointerParams
 {
@@ -35,10 +37,10 @@ AttribPointerParams attribPointerParams[] = {
 // 顶点数组
 float vertices[] = {
     //     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
-    0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.55f, 0.55f,   // 右上
-    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.55f, 0.45f,  // 右下
-    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.45f, 0.45f, // 左下
-    -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.45f, 0.55f   // 左上
+    0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,   // 右上
+    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,  // 右下
+    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // 左下
+    -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f   // 左上
 };
 // 元素缓冲对象
 unsigned int indices[] = {
@@ -59,6 +61,8 @@ unsigned int EBO;
 // 纹理对象
 unsigned int texture, texture2;
 
+float dot = 0.0f;
+
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
     glViewport(0, 0, width, height);
@@ -67,7 +71,22 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 void processInput(GLFWwindow *window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    {
+        cout << "按下了 ESC 按钮" << endl;
         glfwSetWindowShouldClose(window, true);
+    }
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+    {
+        cout << "按下了 UP 按钮"
+             << " , dot = " << dot << endl;
+        dot = min(dot + 0.01f, 1.0f);
+    }
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+    {
+        cout << "按下了 DOWN 按钮"
+             << " , dot = " << dot << endl;
+        dot = max(dot - 0.01f, 0.0f);
+    }
 }
 
 void initBuffers(unsigned int *VAO, unsigned int *VBO, unsigned int *EBO,
@@ -205,15 +224,20 @@ int main()
                 indices, sizeof(indices),
                 attribPointerParams, sizeof(attribPointerParams));
 
-    TexParameter texParameter1[] = {
-        {GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE},
-        {GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE},
+    TexParameter texParameter[] = {
+        {GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT},
+        {GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT},
         {GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST},
         {GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST},
     };
 
     // 初始化纹理
-    texture = initTexture("D:\\workplace\\opengl\\04_textures\\container.jpg", GL_RGB, texParameter1, sizeof(texParameter1));
+    texture = initTexture("D:\\workplace\\opengl\\04_textures\\container.jpg", GL_RGB, texParameter, sizeof(texParameter));
+    texture2 = initTexture("D:\\workplace\\opengl\\04_textures\\awesomeface.png", GL_RGBA, texParameter, sizeof(texParameter));
+    // 设置纹理单元对应的纹理采样器
+    shaderHelper.use();
+    shaderHelper.setInt("texture1", 1, 0);
+    shaderHelper.setInt("texture2", 1, 1);
 
     // 渲染循环
     while (!glfwWindowShouldClose(window))
@@ -226,8 +250,12 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         // 绘制
-        glBindTexture(GL_TEXTURE_2D, texture);
         shaderHelper.use();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture2);
+        shaderHelper.setFloat("dot", 1, dot);
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
