@@ -9,5 +9,5 @@ uniform sampler2D texture2;// 纹理采样器1
 
 void main()
 {
-    FragColor=mix(texture(texture1,TexCoord),texture(texture2,TexCoord),.2);
+    FragColor=mix(texture(texture1,TexCoord),texture(texture2,vec2(-TexCoord.s,TexCoord.t)),.2);
 }
