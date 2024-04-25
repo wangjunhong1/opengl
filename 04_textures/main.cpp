@@ -20,6 +20,12 @@ typedef struct AttribPointerParams
     int stride;
     int offset;
 } AttribPointerParams;
+typedef struct TexParameter
+{
+    int target;
+    int pname;
+    int param;
+} TexParameter;
 AttribPointerParams attribPointerParams[] = {
     {0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0},
     {1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 3 * sizeof(float)},
@@ -29,10 +35,10 @@ AttribPointerParams attribPointerParams[] = {
 // 顶点数组
 float vertices[] = {
     //     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
-    0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,   // 右上
-    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,  // 右下
+    0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 2.0f, 2.0f,   // 右上
+    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 2.0f, 0.0f,  // 右下
     -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // 左下
-    -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f   // 左上
+    -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 2.0f   // 左上
 };
 // 元素缓冲对象
 unsigned int indices[] = {
@@ -104,16 +110,17 @@ void initBuffers(unsigned int *VAO, unsigned int *VBO, unsigned int *EBO,
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // EBO的解绑在VAO解绑后
 }
 
-unsigned int initTexture(const char *path, int colorMode)
+unsigned int initTexture(const char *path, int colorMode,
+                         TexParameter *params, int size)
 {
     unsigned int texture;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
     // 为当前绑定的纹理对象设置环绕、过滤方式
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    for (int i = 0; i < size; i++)
+    {
+        glTexParameteri(params[i].target, params[i].pname, params[i].param);
+    }
     // 加载并生成纹理
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true);
@@ -198,9 +205,23 @@ int main()
                 indices, sizeof(indices),
                 attribPointerParams, sizeof(attribPointerParams));
 
+    TexParameter texParameter1[] = {
+        {GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE},
+        {GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE},
+        // {GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST},
+        // {GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST},
+    };
+
+    TexParameter texParameter2[] = {
+        {GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT},
+        {GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT},
+        // {GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST},
+        // {GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST},
+    };
+
     // 初始化纹理
-    texture = initTexture("D:\\workplace\\opengl\\04_textures\\container.jpg", GL_RGB);
-    texture2 = initTexture("D:\\workplace\\opengl\\04_textures\\awesomeface.png", GL_RGBA);
+    texture = initTexture("D:\\workplace\\opengl\\04_textures\\container.jpg", GL_RGB, texParameter1, sizeof(texParameter1));
+    texture2 = initTexture("D:\\workplace\\opengl\\04_textures\\awesomeface.png", GL_RGBA, texParameter2, sizeof(texParameter2));
     // 设置纹理单元对应的纹理采样器
     shaderHelper.use();
     shaderHelper.setInt("texture1", 1, 0);
