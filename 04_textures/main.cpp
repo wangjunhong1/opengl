@@ -10,8 +10,6 @@
 
 using std::cout;
 using std::endl;
-using std::max;
-using std::min;
 
 typedef struct AttribPointerParams
 {
@@ -22,12 +20,6 @@ typedef struct AttribPointerParams
     int stride;
     int offset;
 } AttribPointerParams;
-typedef struct TexParameter
-{
-    int target;
-    int pname;
-    int param;
-} TexParameter;
 AttribPointerParams attribPointerParams[] = {
     {0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0},
     {1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 3 * sizeof(float)},
@@ -37,19 +29,29 @@ AttribPointerParams attribPointerParams[] = {
 // 顶点数组
 float vertices[] = {
     //     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
-    0.0f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.5f, 1.0f,   // 上
+    0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,   // 右上
     0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,  // 右下
     -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // 左下
+    -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f   // 左上
+};
+// 元素缓冲对象
+unsigned int indices[] = {
+    // 注意索引从0开始!
+    // 此例的索引(0,1,2,3)就是顶点数组vertices的下标，
+    // 这样可以由下标代表顶点组合成矩形
+
+    0, 1, 3, // 第一个三角形
+    2, 3, 1  // 第二个三角形
 };
 
 // 顶点数组对象
 unsigned int VAO;
 // 顶点缓冲对象
 unsigned int VBO;
+// 元素缓冲对象
+unsigned int EBO;
 // 纹理对象
-unsigned int texture, texture2;
-
-float dot = 0.0f;
+unsigned int texture;
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
@@ -59,22 +61,7 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 void processInput(GLFWwindow *window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-    {
-        cout << "按下了 ESC 按钮" << endl;
         glfwSetWindowShouldClose(window, true);
-    }
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-    {
-        cout << "按下了 UP 按钮"
-             << " , dot = " << dot << endl;
-        dot = min(dot + 0.01f, 1.0f);
-    }
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-    {
-        cout << "按下了 DOWN 按钮"
-             << " , dot = " << dot << endl;
-        dot = max(dot - 0.01f, 0.0f);
-    }
 }
 
 void initBuffers(unsigned int *VAO, unsigned int *VBO, unsigned int *EBO,
@@ -117,24 +104,22 @@ void initBuffers(unsigned int *VAO, unsigned int *VBO, unsigned int *EBO,
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // EBO的解绑在VAO解绑后
 }
 
-unsigned int initTexture(const char *path, int colorMode,
-                         TexParameter *params, int size)
+unsigned int initTexture(const char *path)
 {
     unsigned int texture;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
     // 为当前绑定的纹理对象设置环绕、过滤方式
-    for (int i = 0; i < size; i++)
-    {
-        glTexParameteri(params[i].target, params[i].pname, params[i].param);
-    }
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // 加载并生成纹理
     int width, height, nrChannels;
-    stbi_set_flip_vertically_on_load(true);
     unsigned char *data = stbi_load(path, &width, &height, &nrChannels, 0);
     if (data)
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, colorMode, width, height, 0, colorMode, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     else
@@ -202,25 +187,18 @@ int main()
     // 注册窗口大小监听器
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    // 初始化缓冲
+    initBuffers(&VAO, &VBO, &EBO,
+                vertices, sizeof(vertices),
+                indices, sizeof(indices),
+                attribPointerParams, sizeof(attribPointerParams));
+
+    // 初始化纹理
+    texture = initTexture("D:\\workplace\\opengl\\04_textures\\container.jpg");
+
     // 创建着色器
     ShaderHelper shaderHelper("D:\\workplace\\opengl\\04_textures\\vertexShader.glsl",
                               "D:\\workplace\\opengl\\04_textures\\fragmentShader.glsl");
-
-    // 初始化缓冲
-    initBuffers(&VAO, &VBO, 0,
-                vertices, sizeof(vertices),
-                0, 0,
-                attribPointerParams, sizeof(attribPointerParams));
-
-    TexParameter texParameter1[] = {
-        {GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE},
-        {GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE},
-        {GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST},
-        {GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST},
-    };
-
-    // 初始化纹理
-    texture = initTexture("D:\\workplace\\opengl\\04_textures\\wall.jpg", GL_RGB, texParameter1, sizeof(texParameter1));
 
     // 渲染循环
     while (!glfwWindowShouldClose(window))
@@ -233,10 +211,11 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         // 绘制
-        glBindTexture(GL_TEXTURE_2D, texture);
         shaderHelper.use();
+        glBindTexture(GL_TEXTURE_2D, texture);
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
 
         // 3. 检查并调用事件
         glfwPollEvents();
@@ -245,7 +224,7 @@ int main()
     }
 
     // 释放资源
-    realseResources(&VAO, &VBO, 0);
+    realseResources(&VAO, &VBO, &EBO);
     glfwTerminate();
 
     return 0;
