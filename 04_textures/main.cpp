@@ -51,7 +51,7 @@ unsigned int VBO;
 // 元素缓冲对象
 unsigned int EBO;
 // 纹理对象
-unsigned int texture;
+unsigned int texture, texture2;
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
@@ -104,7 +104,7 @@ void initBuffers(unsigned int *VAO, unsigned int *VBO, unsigned int *EBO,
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // EBO的解绑在VAO解绑后
 }
 
-unsigned int initTexture(const char *path)
+unsigned int initTexture(const char *path, int colorMode)
 {
     unsigned int texture;
     glGenTextures(1, &texture);
@@ -116,10 +116,11 @@ unsigned int initTexture(const char *path)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // 加载并生成纹理
     int width, height, nrChannels;
+    stbi_set_flip_vertically_on_load(true);
     unsigned char *data = stbi_load(path, &width, &height, &nrChannels, 0);
     if (data)
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, colorMode, width, height, 0, colorMode, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     else
@@ -187,6 +188,10 @@ int main()
     // 注册窗口大小监听器
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    // 创建着色器
+    ShaderHelper shaderHelper("D:\\workplace\\opengl\\04_textures\\vertexShader.glsl",
+                              "D:\\workplace\\opengl\\04_textures\\fragmentShader.glsl");
+
     // 初始化缓冲
     initBuffers(&VAO, &VBO, &EBO,
                 vertices, sizeof(vertices),
@@ -194,11 +199,12 @@ int main()
                 attribPointerParams, sizeof(attribPointerParams));
 
     // 初始化纹理
-    texture = initTexture("D:\\workplace\\opengl\\04_textures\\container.jpg");
-
-    // 创建着色器
-    ShaderHelper shaderHelper("D:\\workplace\\opengl\\04_textures\\vertexShader.glsl",
-                              "D:\\workplace\\opengl\\04_textures\\fragmentShader.glsl");
+    texture = initTexture("D:\\workplace\\opengl\\04_textures\\container.jpg", GL_RGB);
+    texture2 = initTexture("D:\\workplace\\opengl\\04_textures\\awesomeface.png", GL_RGBA);
+    // 设置纹理单元对应的纹理采样器
+    shaderHelper.use();
+    shaderHelper.setInt("texture1", 1, 0);
+    shaderHelper.setInt("texture2", 1, 1);
 
     // 渲染循环
     while (!glfwWindowShouldClose(window))
@@ -211,8 +217,11 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         // 绘制
-        shaderHelper.use();
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture2);
+        shaderHelper.use();
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
