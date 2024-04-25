@@ -11,12 +11,12 @@ using std::cout;
 using std::endl;
 using std::sin;
 
-// 带颜色信息的顶点数组
+// 顶点数组
 float vertices[] = {
-    // 位置              // 颜色
-    0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,  // 右下
-    -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // 左下
-    0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f    // 顶部
+    // 位置
+    0.5f, -0.5f, 0.0f,  // 右下
+    -0.5f, -0.5f, 0.0f, // 左下
+    0.0f, 0.5f, 0.0f,   // 顶部
 };
 
 unsigned int VAO;
@@ -53,11 +53,8 @@ void initBuffers(unsigned int *VAO, unsigned int *VBO, unsigned int *EBO, float 
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertexLength, vertices, GL_STATIC_DRAW); // 发送顶点数据到顶点缓冲
     // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW); // 发送索引数据到索引缓冲
     // 位置属性
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
-    // 颜色属性
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
 
     // 之后可以解绑VBO和VAO，在需要时重新绑定VAO即可（两者之间没有顺序）
     glBindBuffer(GL_ARRAY_BUFFER, 0); // 解绑VBO
@@ -120,7 +117,6 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         shaderHelper.use();
-        shaderHelper.setFloat("xOffset", 1, 0.5f);
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
