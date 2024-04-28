@@ -199,15 +199,17 @@ int main() {
                 attribPointerParams, sizeof(attribPointerParams));
 
     TexParameter texParameter[] = {
-            {GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT},
-            {GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT},
+            {GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,     GL_REPEAT},
+            {GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_REPEAT},
             {GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST},
             {GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST},
     };
 
     // 初始化纹理
-    texture = initTexture("D:\\workplace\\opengl\\05_transformations\\container.jpg", GL_RGB, texParameter, sizeof(texParameter));
-    texture2 = initTexture("D:\\workplace\\opengl\\05_transformations\\awesomeface.png", GL_RGBA, texParameter, sizeof(texParameter));
+    texture = initTexture("D:\\workplace\\opengl\\05_transformations\\container.jpg", GL_RGB, texParameter,
+                          sizeof(texParameter));
+    texture2 = initTexture("D:\\workplace\\opengl\\05_transformations\\awesomeface.png", GL_RGBA, texParameter,
+                           sizeof(texParameter));
     // 设置纹理单元对应的纹理采样器
     shaderHelper.use();
     shaderHelper.setInt("texture1", 1, 0);
@@ -222,22 +224,34 @@ int main() {
         // 清屏
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        // 绘制
+        // 绑定纹理
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
+        // 激活着色器程序
         shaderHelper.use();
+        // ========== 变换1 ==========
         // 变换矩阵
         glm::mat4 trans;
-        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0, 0.0, 1.0));
         trans = glm::translate(trans, glm::vec3(0.5, -0.5, 0.0));
+        trans = glm::rotate(trans, (float) glfwGetTime(), glm::vec3(0.0, 0.0, 1.0));
         // 传递变换矩阵到着色器
         unsigned int transformLoc = glGetUniformLocation(shaderHelper.getProgramId(), "transform");
         glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+        // 绘制
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
+        // ========== 变换2 ==========
+        // 变换矩阵,这里可以复用上面的矩阵变量以节省空间
+        trans = glm::mat4(1.0f);;
+        trans = glm::translate(trans, glm::vec3(-0.5, 0.5, 0.0));
+        float t = std::sin(glfwGetTime()) + 1;
+        trans = glm::scale(trans, glm::vec3(t, t, t));
+        // 传递变换矩阵到着色器
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+        // 再次绘制
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         // 3. 检查并调用事件
         glfwPollEvents();
         // 4. 交换颜色缓冲
