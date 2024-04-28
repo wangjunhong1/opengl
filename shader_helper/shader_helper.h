@@ -30,6 +30,7 @@ public:
     void setInt(const char *name, int size, ...) const;
     void setFloat(const char *name, int size, ...) const;
     void setDouble(const char *name, int size, ...) const;
+    unsigned int getProgramId();
 };
 
 #endif // SHADER_HELPER_H

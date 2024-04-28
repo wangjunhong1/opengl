@@ -180,3 +180,7 @@ void ShaderHelper::setDouble(const char *name, int size, ...) const {
     }
     va_end(args); // 清理工作
 }
+
+unsigned ShaderHelper::getProgramId() {
+    return programId;
+}
