@@ -206,21 +206,12 @@ int main() {
     };
 
     // 初始化纹理
-    texture = initTexture("D:\\workplace\\opengl\\04_textures\\container.jpg", GL_RGB, texParameter, sizeof(texParameter));
-    texture2 = initTexture("D:\\workplace\\opengl\\04_textures\\awesomeface.png", GL_RGBA, texParameter, sizeof(texParameter));
+    texture = initTexture("D:\\workplace\\opengl\\05_transformations\\container.jpg", GL_RGB, texParameter, sizeof(texParameter));
+    texture2 = initTexture("D:\\workplace\\opengl\\05_transformations\\awesomeface.png", GL_RGBA, texParameter, sizeof(texParameter));
     // 设置纹理单元对应的纹理采样器
     shaderHelper.use();
     shaderHelper.setInt("texture1", 1, 0);
     shaderHelper.setInt("texture2", 1, 1);
-
-    // 变换矩阵
-    glm::mat4 trans;
-    trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0));
-    trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
-
-    // 传递变换矩阵到着色器
-    unsigned int transformLoc = glGetUniformLocation(shaderHelper.getProgramId(), "transform");
-    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
     // 渲染循环
     while (!glfwWindowShouldClose(window)) {
@@ -237,6 +228,13 @@ int main() {
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
         shaderHelper.use();
+        // 变换矩阵
+        glm::mat4 trans;
+        trans = glm::translate(trans, glm::vec3(0.5, -0.5, 0.0));
+        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0, 0.0, 1.0));
+        // 传递变换矩阵到着色器
+        unsigned int transformLoc = glGetUniformLocation(shaderHelper.getProgramId(), "transform");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
