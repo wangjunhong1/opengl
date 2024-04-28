@@ -1,5 +1,8 @@
+cmake_minimum_required(VERSION 3.15)
+project(opengl)
 add_subdirectory(00_test_env)
 add_subdirectory(01_hello_window)
 add_subdirectory(02_hello_triangle)
 add_subdirectory(03_shaders)
 add_subdirectory(04_textures)
+add_subdirectory(05_transformations)
