@@ -189,8 +189,8 @@ int main() {
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // 创建着色器
-    ShaderHelper shaderHelper("D:\\workplace\\opengl\\05_transformations\\vertexShader.glsl",
-                              "D:\\workplace\\opengl\\05_transformations\\fragmentShader.glsl");
+    ShaderHelper shaderHelper("C:\\workplace\\opengl\\05_transformations\\vertexShader.glsl",
+                              "C:\\workplace\\opengl\\05_transformations\\fragmentShader.glsl");
 
     // 初始化缓冲
     initBuffers(&VAO, &VBO, &EBO,
@@ -206,9 +206,9 @@ int main() {
     };
 
     // 初始化纹理
-    texture = initTexture("D:\\workplace\\opengl\\05_transformations\\container.jpg", GL_RGB, texParameter,
+    texture = initTexture("C:\\workplace\\opengl\\05_transformations\\container.jpg", GL_RGB, texParameter,
                           sizeof(texParameter));
-    texture2 = initTexture("D:\\workplace\\opengl\\05_transformations\\awesomeface.png", GL_RGBA, texParameter,
+    texture2 = initTexture("C:\\workplace\\opengl\\05_transformations\\awesomeface.png", GL_RGBA, texParameter,
                            sizeof(texParameter));
     // 设置纹理单元对应的纹理采样器
     shaderHelper.use();

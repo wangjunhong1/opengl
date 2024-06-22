@@ -1,15 +1,9 @@
 #ifndef SHADER_HELPER_H
 #define SHADER_HELPER_H
 
-#include <glad/glad.h>
-
 #include <string>
 #include <fstream>
-#include <sstream>
-#include <iostream>
-#include <vector>
 #include <string>
-#include <cstdarg>
 
 class ShaderHelper
 {
@@ -29,7 +23,6 @@ public:
     void setBool(const char *name, int size, ...) const;
     void setInt(const char *name, int size, ...) const;
     void setFloat(const char *name, int size, ...) const;
-    void setDouble(const char *name, int size, ...) const;
     unsigned int getProgramId();
 };
 

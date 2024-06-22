@@ -1,5 +1,10 @@
 #include "shader_helper.h"
+#include <glad/glad.h>
+#include <GLFW//glfw3.h>
 #include <fstream>
+#include <iostream>
+#include <vector>
+#include <cstdarg>
 
 unsigned int ShaderHelper::buildShader(const char *shaderSource, int shaderType) {
     const char *shaderName = shaderType == GL_VERTEX_SHADER ? "顶点着色器" : "片段着色器";
@@ -150,33 +155,6 @@ void ShaderHelper::setFloat(const char *name, int size, ...) const {
             break;
         default:
             std::cout << "ShaderHelper::setFloat参数错误" << std::endl;
-    }
-    va_end(args); // 清理工作
-}
-
-void ShaderHelper::setDouble(const char *name, int size, ...) const {
-    va_list args;
-    va_start(args, size); // 初始化 args 变量
-    int location = glGetUniformLocation(programId, name);
-    std::vector<double> dv;
-    for (int i = 0; i < size; i++) {
-        dv.push_back(va_arg(args, double));
-    }
-    switch (size) {
-        case 1:
-            glUniform1d(location, dv[0]);
-            break;
-        case 2:
-            glUniform2d(location, dv[0], dv[1]);
-            break;
-        case 3:
-            glUniform3d(location, dv[0], dv[1], dv[2]);
-            break;
-        case 4:
-            glUniform4d(location, dv[0], dv[1], dv[2], dv[3]);
-            break;
-        default:
-            std::cout << "ShaderHelper::setDouble参数错误" << std::endl;
     }
     va_end(args); // 清理工作
 }

@@ -102,8 +102,8 @@ int main()
     cout << "支持的最大顶点属性数是 : " << nrAttributes << endl;
 
     initBuffers(&VAO, &VBO, NULL, vertices, sizeof(vertices));
-    ShaderHelper shaderHelper("D:\\workplace\\opengl\\03_shaders\\vertexShader.glsl",  // 顶点着色器源代码路径
-                              "D:\\workplace\\opengl\\03_shaders\\fragmentShader.glsl" // 片段着色器源代码路径
+    ShaderHelper shaderHelper("C:\\workplace\\opengl\\03_shaders\\vertexShader.glsl",  // 顶点着色器源代码路径
+                              "C:\\workplace\\opengl\\03_shaders\\fragmentShader.glsl" // 片段着色器源代码路径
     );
 
     // 渲染循环
