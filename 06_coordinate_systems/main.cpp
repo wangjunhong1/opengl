@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <shader_helper.h>
+#include <random>
 
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -84,15 +85,23 @@ float vertices[] = {
     -0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
     -0.5f, 0.5f, -0.5f, 0.0f, 1.0f
 };
-// 元素缓冲对象
-unsigned int indices[] = {
-    // 注意索引从0开始!
-    // 此例的索引(0,1,2,3)就是顶点数组vertices的下标，
-    // 这样可以由下标代表顶点组合成矩形
 
-    0, 1, 3, // 第一个三角形
-    2, 3, 1 // 第二个三角形
+// 十个正方体的位置
+glm::vec3 cubePositions[] = {
+    glm::vec3(0.0f, 0.0f, 0.0f),
+    glm::vec3(2.0f, 5.0f, -15.0f),
+    glm::vec3(-1.5f, -2.2f, -2.5f),
+    glm::vec3(-3.8f, -2.0f, -12.3f),
+    glm::vec3(2.4f, -0.4f, -3.5f),
+    glm::vec3(-1.7f, 3.0f, -7.5f),
+    glm::vec3(1.3f, -2.0f, -2.5f),
+    glm::vec3(1.5f, 2.0f, -2.5f),
+    glm::vec3(1.5f, 0.2f, -1.5f),
+    glm::vec3(-1.3f, 1.0f, -1.5f)
 };
+
+// 十个正方体的旋转轴
+glm::vec3 cubeRotateLine[10];
 
 // 顶点数组对象
 unsigned int VAO;
@@ -229,6 +238,14 @@ void initGlad()
     }
 }
 
+// 生成范围在 [min, max] 内的随机浮点数
+float random_float(float min, float max) {
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dis(min, max);
+    return dis(gen);
+}
+
 int main()
 {
     // 初始化窗口
@@ -249,7 +266,7 @@ int main()
     // 初始化缓冲
     initBuffers(&VAO, &VBO, NULL,
                 vertices, sizeof(vertices),
-                indices, sizeof(indices),
+                NULL, 0,
                 attribPointerParams, sizeof(attribPointerParams));
 
     TexParameter texParameter[] = {
@@ -279,6 +296,16 @@ int main()
     projection = glm::perspective(glm::radians(45.0f),
                                   (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
 
+    // 随机初始化旋转轴
+    // 填充数组
+    for (int i = 0; i < 10; ++i) {
+        glm::vec3 random_vec3;
+        random_vec3.x = random_float(0.0, 1.0);
+        random_vec3.y = random_float(0.0, 1.0);
+        random_vec3.z = random_float(0.0, 1.0);
+        cubeRotateLine[i] = random_vec3;
+    }
+
     // 渲染循环
     while (!glfwWindowShouldClose(window))
     {
@@ -296,18 +323,22 @@ int main()
         glBindTexture(GL_TEXTURE_2D, texture1);
         // 激活着色器程序
         shaderHelper.use();
-        // 创建随时间变化的model矩阵
-        glm::mat4 model;
-        model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.2f));
         // 传递MVP矩阵
         int modelLocation = glGetUniformLocation(shaderHelper.getProgramId(), "model");
-        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
         int viewLocation = glGetUniformLocation(shaderHelper.getProgramId(), "view");
         glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
         int projectionLocation = glGetUniformLocation(shaderHelper.getProgramId(), "projection");
         glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
         // 绘制
         glBindVertexArray(VAO);
+        for (unsigned int i = 0; i < 10; i++)
+        {
+            glm::mat4 model;
+            model = glm::translate(model, cubePositions[i]);
+            model = glm::rotate(model, (float)glfwGetTime(), cubeRotateLine[i]);
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
         glDrawArrays(GL_TRIANGLES, 0, 36);
         // 3. 检查并调用事件
         glfwPollEvents();
