@@ -2,8 +2,13 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <shader_helper.h>
+
 #define STB_IMAGE_IMPLEMENTATION
+
 #include <stb_image.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #define WIDTH 800
 #define HEIGHT 600
@@ -22,25 +27,26 @@ typedef struct AttribPointerParams
     int stride;
     int offset;
 } AttribPointerParams;
+
 typedef struct TexParameter
 {
     int target;
     int pname;
     int param;
 } TexParameter;
+
 AttribPointerParams attribPointerParams[] = {
-    {0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0},
-    {1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 3 * sizeof(float)},
-    {2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 6 * sizeof(float)},
+    {0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 0},
+    {1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 3 * sizeof(float)},
 };
 
 // 顶点数组
 float vertices[] = {
-    //     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
-    0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,   // 右上
-    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,  // 右下
-    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // 左下
-    -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f   // 左上
+    //     ---- 位置 ----         - 纹理坐标 -
+    0.5f, 0.5f, 0.0f, 1.0f, 1.0f, // 右上
+    0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // 右下
+    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // 左下
+    -0.5f, 0.5f, 0.0f, 0.0f, 1.0f // 左上
 };
 // 元素缓冲对象
 unsigned int indices[] = {
@@ -49,7 +55,7 @@ unsigned int indices[] = {
     // 这样可以由下标代表顶点组合成矩形
 
     0, 1, 3, // 第一个三角形
-    2, 3, 1  // 第二个三角形
+    2, 3, 1 // 第二个三角形
 };
 
 // 顶点数组对象
@@ -63,36 +69,24 @@ unsigned int texture0, texture1;
 
 float dot = 0.0f;
 
-void framebuffer_size_callback(GLFWwindow *window, int width, int height)
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow *window)
+void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
         cout << "按下了 ESC 按钮" << endl;
         glfwSetWindowShouldClose(window, true);
     }
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-    {
-        cout << "按下了 UP 按钮"
-             << " , dot = " << dot << endl;
-        dot = min(dot + 0.01f, 1.0f);
-    }
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-    {
-        cout << "按下了 DOWN 按钮"
-             << " , dot = " << dot << endl;
-        dot = max(dot - 0.01f, 0.0f);
-    }
 }
 
-void initBuffers(unsigned int *VAO, unsigned int *VBO, unsigned int *EBO,
-                 float *vertices, int vertexLength,
-                 unsigned int *indices, int indicesLength,
-                 AttribPointerParams *params, int paramsLength)
+void initBuffers(unsigned int* VAO, unsigned int* VBO, unsigned int* EBO,
+                 float* vertices, int vertexLength,
+                 unsigned int* indices, int indicesLength,
+                 AttribPointerParams* params, int paramsLength)
 {
     // 生成顶点数组对象
     glGenVertexArrays(1, VAO);
@@ -118,19 +112,19 @@ void initBuffers(unsigned int *VAO, unsigned int *VBO, unsigned int *EBO,
     for (int i = 0; i < paramsLength; i++)
     {
         glVertexAttribPointer(params[i].index, params[i].count, params[i].type,
-                              params[i].normalized, params[i].stride, (void *)params[i].offset);
+                              params[i].normalized, params[i].stride, (void*)params[i].offset);
         glEnableVertexAttribArray(params[i].index);
     }
 
     // 之后可以解绑VBO和VAO，在需要时重新绑定VAO即可（两者之间没有顺序）
     glBindBuffer(GL_ARRAY_BUFFER, 0); // 解绑VBO
-    glBindVertexArray(0);             // 解绑VAO
+    glBindVertexArray(0); // 解绑VAO
     if (EBO)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // EBO的解绑在VAO解绑后
 }
 
-unsigned int initTexture(const char *path, int colorMode,
-                         TexParameter *params, int size)
+unsigned int initTexture(const char* path, int colorMode,
+                         TexParameter* params, int size)
 {
     unsigned int texture;
     glGenTextures(1, &texture);
@@ -143,7 +137,7 @@ unsigned int initTexture(const char *path, int colorMode,
     // 加载并生成纹理
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true);
-    unsigned char *data = stbi_load(path, &width, &height, &nrChannels, 0);
+    unsigned char* data = stbi_load(path, &width, &height, &nrChannels, 0);
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, colorMode, width, height, 0, colorMode, GL_UNSIGNED_BYTE, data);
@@ -157,7 +151,7 @@ unsigned int initTexture(const char *path, int colorMode,
     return texture;
 }
 
-void realseResources(unsigned int *VAO, unsigned int *VBO, unsigned int *EBO)
+void realseResources(unsigned int* VAO, unsigned int* VBO, unsigned int* EBO)
 {
     if (VAO)
         glDeleteVertexArrays(1, VAO);
@@ -167,7 +161,7 @@ void realseResources(unsigned int *VAO, unsigned int *VBO, unsigned int *EBO)
         glDeleteBuffers(1, EBO);
 }
 
-GLFWwindow *initGlfw()
+GLFWwindow* initGlfw()
 {
     // 初始化GLFW
     glfwInit();
@@ -178,7 +172,7 @@ GLFWwindow *initGlfw()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // 创建窗口
-    GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "04_textures", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "05_transformations", NULL, NULL);
     if (window == NULL)
     {
         cout << "创建GLFW窗口失败." << endl;
@@ -204,7 +198,7 @@ void initGlad()
 int main()
 {
     // 初始化窗口
-    GLFWwindow *window = initGlfw();
+    GLFWwindow* window = initGlfw();
 
     // 初始化GLAD
     initGlad();
@@ -215,8 +209,8 @@ int main()
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // 创建着色器
-    ShaderHelper shaderHelper("C:\\workplace\\opengl\\04_textures\\vertexShader.glsl",
-                              "C:\\workplace\\opengl\\04_textures\\fragmentShader.glsl");
+    ShaderHelper shaderHelper("C:\\workplace\\opengl\\06_coordinate_systems\\vertexShader.glsl",
+                              "C:\\workplace\\opengl\\06_coordinate_systems\\fragmentShader.glsl");
 
     // 初始化缓冲
     initBuffers(&VAO, &VBO, &EBO,
@@ -232,12 +226,24 @@ int main()
     };
 
     // 初始化纹理
-    texture0 = initTexture("C:\\workplace\\opengl\\assets\\container.jpg", GL_RGB, texParameter, sizeof(texParameter));
-    texture1 = initTexture("C:\\workplace\\opengl\\assets\\awesomeface.png", GL_RGBA, texParameter, sizeof(texParameter));
+    texture0 = initTexture("C:\\workplace\\opengl\\assets\\container.jpg", GL_RGB, texParameter,
+                           sizeof(texParameter));
+    texture1 = initTexture("C:\\workplace\\opengl\\assets\\awesomeface.png", GL_RGBA, texParameter,
+                           sizeof(texParameter));
     // 设置纹理单元对应的纹理采样器
     shaderHelper.use();
     shaderHelper.setInt("texture1", 1, 0);
     shaderHelper.setInt("texture2", 1, 1);
+
+    // !初始化MVP矩阵
+    glm::mat4 model;
+    model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    glm::mat4 view;
+    // 注意，我们将矩阵向我们要进行移动场景的反方向移动。
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    glm::mat4 projection;
+    projection = glm::perspective(glm::radians(45.0f),
+                                  (float)WIDTH / HEIGHT, 0.1f, 100.0f);
 
     // 渲染循环
     while (!glfwWindowShouldClose(window))
@@ -249,17 +255,23 @@ int main()
         // 清屏
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        // 绘制
-        shaderHelper.use();
+        // 绑定纹理
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture0);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture1);
-        shaderHelper.setFloat("dot", 1, dot);
+        // 激活着色器程序
+        shaderHelper.use();
+        // 传递MVP矩阵
+        int modelLocation = glGetUniformLocation(shaderHelper.getProgramId(), "model");
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
+        int viewLocation = glGetUniformLocation(shaderHelper.getProgramId(), "view");
+        glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
+        int projectionLocation = glGetUniformLocation(shaderHelper.getProgramId(), "projection");
+        glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
+        // 绘制
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
-
         // 3. 检查并调用事件
         glfwPollEvents();
         // 4. 交换颜色缓冲

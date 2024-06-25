@@ -61,7 +61,7 @@ unsigned int VBO;
 // 元素缓冲对象
 unsigned int EBO;
 // 纹理对象
-unsigned int texture, texture2;
+unsigned int texture0, texture1;
 
 float dot = 0.0f;
 
@@ -206,9 +206,9 @@ int main() {
     };
 
     // 初始化纹理
-    texture = initTexture("C:\\workplace\\opengl\\05_transformations\\container.jpg", GL_RGB, texParameter,
+    texture0 = initTexture("C:\\workplace\\opengl\\assets\\container.jpg", GL_RGB, texParameter,
                           sizeof(texParameter));
-    texture2 = initTexture("C:\\workplace\\opengl\\05_transformations\\awesomeface.png", GL_RGBA, texParameter,
+    texture1 = initTexture("C:\\workplace\\opengl\\assets\\awesomeface.png", GL_RGBA, texParameter,
                            sizeof(texParameter));
     // 设置纹理单元对应的纹理采样器
     shaderHelper.use();
@@ -226,9 +226,9 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
         // 绑定纹理
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture);
+        glBindTexture(GL_TEXTURE_2D, texture0);
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture2);
+        glBindTexture(GL_TEXTURE_2D, texture1);
         // 激活着色器程序
         shaderHelper.use();
         // ========== 变换1 ==========
