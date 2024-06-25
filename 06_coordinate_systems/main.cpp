@@ -42,11 +42,47 @@ AttribPointerParams attribPointerParams[] = {
 
 // 顶点数组
 float vertices[] = {
-    //     ---- 位置 ----         - 纹理坐标 -
-    0.5f, 0.5f, 0.0f, 1.0f, 1.0f, // 右上
-    0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // 右下
-    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // 左下
-    -0.5f, 0.5f, 0.0f, 0.0f, 1.0f // 左上
+    -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+    0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
+    0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+    0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+    -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+
+    -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+    0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+    0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+    0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+    -0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+    -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+
+    -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+    -0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+    -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+    -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+
+    0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+    0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+    0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+    0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+    0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+    0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+
+    -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+    0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
+    0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+    0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+    -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+
+    -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+    0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+    0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+    0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+    -0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+    -0.5f, 0.5f, -0.5f, 0.0f, 1.0f
 };
 // 元素缓冲对象
 unsigned int indices[] = {
@@ -62,8 +98,6 @@ unsigned int indices[] = {
 unsigned int VAO;
 // 顶点缓冲对象
 unsigned int VBO;
-// 元素缓冲对象
-unsigned int EBO;
 // 纹理对象
 unsigned int texture0, texture1;
 
@@ -172,7 +206,7 @@ GLFWwindow* initGlfw()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // 创建窗口
-    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "05_transformations", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "06_coordinate_systems", NULL, NULL);
     if (window == NULL)
     {
         cout << "创建GLFW窗口失败." << endl;
@@ -213,7 +247,7 @@ int main()
                               "C:\\workplace\\opengl\\06_coordinate_systems\\fragmentShader.glsl");
 
     // 初始化缓冲
-    initBuffers(&VAO, &VBO, &EBO,
+    initBuffers(&VAO, &VBO, NULL,
                 vertices, sizeof(vertices),
                 indices, sizeof(indices),
                 attribPointerParams, sizeof(attribPointerParams));
@@ -235,15 +269,15 @@ int main()
     shaderHelper.setInt("texture1", 1, 0);
     shaderHelper.setInt("texture2", 1, 1);
 
-    // !初始化MVP矩阵
-    glm::mat4 model;
-    model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    glm::mat4 view;
-    // 注意，我们将矩阵向我们要进行移动场景的反方向移动。
+    // 激活深度测试
+    glEnable(GL_DEPTH_TEST);
+
+    // 初始化VP矩阵
+    glm::mat4 view = glm::mat4(1.0f);
+    glm::mat4 projection = glm::mat4(1.0f);
     view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-    glm::mat4 projection;
     projection = glm::perspective(glm::radians(45.0f),
-                                  (float)WIDTH / HEIGHT, 0.1f, 100.0f);
+                                  (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
 
     // 渲染循环
     while (!glfwWindowShouldClose(window))
@@ -254,7 +288,7 @@ int main()
         // 2. 渲染指令
         // 清屏
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         // 绑定纹理
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture0);
@@ -262,6 +296,9 @@ int main()
         glBindTexture(GL_TEXTURE_2D, texture1);
         // 激活着色器程序
         shaderHelper.use();
+        // 创建随时间变化的model矩阵
+        glm::mat4 model;
+        model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.2f));
         // 传递MVP矩阵
         int modelLocation = glGetUniformLocation(shaderHelper.getProgramId(), "model");
         glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
@@ -271,7 +308,7 @@ int main()
         glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
         // 绘制
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
         // 3. 检查并调用事件
         glfwPollEvents();
         // 4. 交换颜色缓冲
@@ -279,7 +316,7 @@ int main()
     }
 
     // 释放资源
-    realseResources(&VAO, &VBO, &EBO);
+    realseResources(&VAO, &VBO, NULL);
     glfwTerminate();
 
     return 0;
