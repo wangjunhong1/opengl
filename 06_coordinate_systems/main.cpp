@@ -110,7 +110,7 @@ unsigned int VBO;
 // 纹理对象
 unsigned int texture0, texture1;
 
-float dot = 0.0f;
+float fov = 45.0f;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -121,8 +121,20 @@ void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
-        cout << "按下了 ESC 按钮" << endl;
+        cout << "按下了 ESC 键" << endl;
         glfwSetWindowShouldClose(window, true);
+    }
+    if (glfwGetKey(window,GLFW_KEY_UP) == GLFW_PRESS)
+    {
+        cout << "按下了 UP 键 , fov=" << fov << endl;
+        fov += 1.0f;
+        if (fov >= 90.f) fov = 90.f;
+    }
+    if (glfwGetKey(window,GLFW_KEY_DOWN) == GLFW_PRESS)
+    {
+        cout << "按下了 DOWN 键 , fov=" << fov << endl;
+        fov -= 1.0f;
+        if (fov <= 0.0f) fov = 0.0f;
     }
 }
 
@@ -239,7 +251,8 @@ void initGlad()
 }
 
 // 生成范围在 [min, max] 内的随机浮点数
-float random_float(float min, float max) {
+float random_float(float min, float max)
+{
     static std::random_device rd;
     static std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dis(min, max);
@@ -293,12 +306,11 @@ int main()
     glm::mat4 view = glm::mat4(1.0f);
     glm::mat4 projection = glm::mat4(1.0f);
     view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-    projection = glm::perspective(glm::radians(45.0f),
-                                  (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
 
     // 随机初始化旋转轴
     // 填充数组
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 10; ++i)
+    {
         glm::vec3 random_vec3;
         random_vec3.x = random_float(0.0, 1.0);
         random_vec3.y = random_float(0.0, 1.0);
@@ -328,6 +340,8 @@ int main()
         int viewLocation = glGetUniformLocation(shaderHelper.getProgramId(), "view");
         glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
         int projectionLocation = glGetUniformLocation(shaderHelper.getProgramId(), "projection");
+        projection = glm::perspective(glm::radians(fov),
+                                      (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
         glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
         // 绘制
         glBindVertexArray(VAO);
