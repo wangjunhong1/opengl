@@ -101,6 +101,91 @@ const char *fragmentShaderSource2 = "#version 330 core\n"
                                     "    FragColor = vec4(1.0f, 1.0f, 0.0f, 1.0f);\n"
                                     "}";
 
+void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+
+void processInput(GLFWwindow *window);
+
+void initBuffers(unsigned int *VAO, unsigned int *VBO, unsigned int *EBO, float *vertices, int vertexLength);
+
+unsigned int buildShader(const char *shaderSource, int shaderType);
+
+unsigned int createProgram(const char *vertexShaderSource, const char *fragmentShaderSource);
+
+int main()
+{
+    // 初始化GLFW
+    glfwInit();
+    // 设置OpenGL版本为3.3
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // 主版本号
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3); // 次版本号
+    // 设置核心渲染模式
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    // 创建窗口
+    GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "02_hello_triangle", NULL, NULL);
+    if (window == NULL)
+    {
+        cout << "创建GLFW窗口失败." << endl;
+        glfwTerminate();
+        return -1;
+    }
+    // 设置窗口上下文
+    glfwMakeContextCurrent(window);
+
+    // 初始化GLAD
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        cout << "初始化GLAD失败." << endl;
+        glfwTerminate();
+        return -1;
+    }
+
+    // 设置视口
+    glViewport(0, 0, WIDTH, HEIGHT);
+    // 注册窗口大小监听器
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+    initBuffers(&VAO, &VBO, NULL, vertices, 9);
+    initBuffers(&VAO2, &VBO2, NULL, vertices2, 9);
+
+    shaderProgram = createProgram(vertexShaderSource, fragmentShaderSource);
+    shaderProgram2 = createProgram(vertexShaderSource, fragmentShaderSource2);
+
+    // 渲染循环
+    while (!glfwWindowShouldClose(window))
+    {
+        // 1. 处理输入事件
+        processInput(window);
+
+        // 2. 渲染指令
+        // 清屏
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        // 绘制
+        glUseProgram(shaderProgram);
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glUseProgram(shaderProgram2);
+        glBindVertexArray(VAO2);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        // 3. 检查并调用事件
+        glfwPollEvents();
+        // 4. 交换颜色缓冲
+        glfwSwapBuffers(window);
+    }
+
+    // 释放资源
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteProgram(shaderProgram);
+    glfwTerminate();
+
+    return 0;
+}
+
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
     glViewport(0, 0, width, height);
@@ -194,79 +279,4 @@ unsigned int createProgram(const char *vertexShaderSource, const char *fragmentS
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
     return shaderProgram;
-}
-
-int main()
-{
-    // 初始化GLFW
-    glfwInit();
-    // 设置OpenGL版本为3.3
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // 主版本号
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3); // 次版本号
-    // 设置核心渲染模式
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    // 创建窗口
-    GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "02_hello_triangle", NULL, NULL);
-    if (window == NULL)
-    {
-        cout << "创建GLFW窗口失败." << endl;
-        glfwTerminate();
-        return -1;
-    }
-    // 设置窗口上下文
-    glfwMakeContextCurrent(window);
-
-    // 初始化GLAD
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        cout << "初始化GLAD失败." << endl;
-        glfwTerminate();
-        return -1;
-    }
-
-    // 设置视口
-    glViewport(0, 0, WIDTH, HEIGHT);
-    // 注册窗口大小监听器
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-    initBuffers(&VAO, &VBO, NULL, vertices, 9);
-    initBuffers(&VAO2, &VBO2, NULL, vertices2, 9);
-
-    shaderProgram = createProgram(vertexShaderSource, fragmentShaderSource);
-    shaderProgram2 = createProgram(vertexShaderSource, fragmentShaderSource2);
-
-    // 渲染循环
-    while (!glfwWindowShouldClose(window))
-    {
-        // 1. 处理输入事件
-        processInput(window);
-
-        // 2. 渲染指令
-        // 清屏
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        // 绘制
-        glUseProgram(shaderProgram);
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glUseProgram(shaderProgram2);
-        glBindVertexArray(VAO2);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-
-        // 3. 检查并调用事件
-        glfwPollEvents();
-        // 4. 交换颜色缓冲
-        glfwSwapBuffers(window);
-    }
-
-    // 释放资源
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteProgram(shaderProgram);
-    glfwTerminate();
-
-    return 0;
 }

@@ -5,28 +5,9 @@
 using std::cout;
 using std::endl;
 
-/**
- * 窗口大小变化的回调函数
- * @param window 上下文中的窗口
- * @param width 变化后的新宽度
- * @param height 变化后的新高度
- */
-void framebuffer_size_callback(GLFWwindow *window, int width, int height)
-{
-    // 窗口大小变化后重新设置视口大小
-    glViewport(0, 0, width, height);
-}
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
-/**
- * 处理输入事件
- * @param window 上下文中的window
- */
-void processInput(GLFWwindow *window)
-{
-    // 如果按了ESC则退出渲染循环
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-}
+void processInput(GLFWwindow* window);
 
 int main()
 {
@@ -39,7 +20,7 @@ int main()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // 创建窗口
-    GLFWwindow *window = glfwCreateWindow(800, 600, "01_hello_window", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "01_hello_window", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -69,7 +50,7 @@ int main()
 
         // 2. 渲染指令
         glClearColor(1.0f, 0.0f, 0.0f, 1.0f); // 设置颜色
-        glClear(GL_COLOR_BUFFER_BIT);         // 用指定颜色清空缓冲
+        glClear(GL_COLOR_BUFFER_BIT); // 用指定颜色清空缓冲
 
         // 3. 检查并调用事件
         glfwPollEvents();
@@ -81,4 +62,27 @@ int main()
     glfwTerminate();
 
     return 0;
+}
+
+/**
+ * 窗口大小变化的回调函数
+ * @param window 上下文中的窗口
+ * @param width 变化后的新宽度
+ * @param height 变化后的新高度
+ */
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    // 窗口大小变化后重新设置视口大小
+    glViewport(0, 0, width, height);
+}
+
+/**
+ * 处理输入事件
+ * @param window 上下文中的window
+ */
+void processInput(GLFWwindow* window)
+{
+    // 如果按了ESC则退出渲染循环
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
 }

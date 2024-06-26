@@ -14,53 +14,19 @@ using std::sin;
 // 顶点数组
 float vertices[] = {
     // 位置
-    0.5f, -0.5f, 0.0f,  // 右下
+    0.5f, -0.5f, 0.0f, // 右下
     -0.5f, -0.5f, 0.0f, // 左下
-    0.0f, 0.5f, 0.0f,   // 顶部
+    0.0f, 0.5f, 0.0f, // 顶部
 };
 
 unsigned int VAO;
 unsigned int VBO;
 
-void framebuffer_size_callback(GLFWwindow *window, int width, int height)
-{
-    glViewport(0, 0, width, height);
-}
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
-void processInput(GLFWwindow *window)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-}
+void processInput(GLFWwindow* window);
 
-void initBuffers(unsigned int *VAO, unsigned int *VBO, unsigned int *EBO, float *vertices, int vertexLength)
-{
-    // 生成顶点数组对象
-    glGenVertexArrays(1, VAO);
-    // 生成顶点缓冲对象
-    glGenBuffers(1, VBO);
-    // 生成元素缓冲对象
-    // glGenBuffers(1, &EBO);
-
-    // 绑定VAO（记住先绑定VAO）
-    glBindVertexArray(*VAO);
-    // 绑定缓冲对象
-    glBindBuffer(GL_ARRAY_BUFFER, *VBO);
-    // 绑定元素缓冲对象
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-
-    // 发送数据到缓冲
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertexLength, vertices, GL_STATIC_DRAW); // 发送顶点数据到顶点缓冲
-    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW); // 发送索引数据到索引缓冲
-    // 位置属性
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
-
-    // 之后可以解绑VBO和VAO，在需要时重新绑定VAO即可（两者之间没有顺序）
-    glBindBuffer(GL_ARRAY_BUFFER, 0); // 解绑VBO
-    glBindVertexArray(0);             // 解绑VAO
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // EBO的解绑在VAO解绑后
-}
+void initBuffers(unsigned int* VAO, unsigned int* VBO, unsigned int* EBO, float* vertices, int vertexLength);
 
 int main()
 {
@@ -73,7 +39,7 @@ int main()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // 创建窗口
-    GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "03_shaders", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "03_shaders", NULL, NULL);
     if (window == NULL)
     {
         cout << "创建GLFW窗口失败." << endl;
@@ -102,7 +68,7 @@ int main()
     cout << "支持的最大顶点属性数是 : " << nrAttributes << endl;
 
     initBuffers(&VAO, &VBO, NULL, vertices, sizeof(vertices));
-    ShaderHelper shaderHelper("C:\\workplace\\opengl\\03_shaders\\vertexShader.glsl",  // 顶点着色器源代码路径
+    ShaderHelper shaderHelper("C:\\workplace\\opengl\\03_shaders\\vertexShader.glsl", // 顶点着色器源代码路径
                               "C:\\workplace\\opengl\\03_shaders\\fragmentShader.glsl" // 片段着色器源代码路径
     );
 
@@ -130,4 +96,44 @@ int main()
     glfwTerminate();
 
     return 0;
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void initBuffers(unsigned int* VAO, unsigned int* VBO, unsigned int* EBO, float* vertices, int vertexLength)
+{
+    // 生成顶点数组对象
+    glGenVertexArrays(1, VAO);
+    // 生成顶点缓冲对象
+    glGenBuffers(1, VBO);
+    // 生成元素缓冲对象
+    // glGenBuffers(1, &EBO);
+
+    // 绑定VAO（记住先绑定VAO）
+    glBindVertexArray(*VAO);
+    // 绑定缓冲对象
+    glBindBuffer(GL_ARRAY_BUFFER, *VBO);
+    // 绑定元素缓冲对象
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
+    // 发送数据到缓冲
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertexLength, vertices, GL_STATIC_DRAW); // 发送顶点数据到顶点缓冲
+    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW); // 发送索引数据到索引缓冲
+    // 位置属性
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // 之后可以解绑VBO和VAO，在需要时重新绑定VAO即可（两者之间没有顺序）
+    glBindBuffer(GL_ARRAY_BUFFER, 0); // 解绑VBO
+    glBindVertexArray(0); // 解绑VAO
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // EBO的解绑在VAO解绑后
 }

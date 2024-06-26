@@ -8,8 +8,11 @@ project(06_coordinate_systems)
 # 源文件
 file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../libs/glad.c
         ${CMAKE_CURRENT_SOURCE_DIR}/../shader_helper/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../common/*.cpp
         main.cpp)
 # 生成可执行文件
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(${PROJECT_NAME} ${SOURCES}
+        ../common/common.h
+        ../common/common.cpp)
 # 链接库
 target_link_libraries(${PROJECT_NAME} glfw3)
